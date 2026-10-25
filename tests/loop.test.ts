@@ -328,7 +328,11 @@ test("runCli prints tmux detach hint first when inside tmux", async () => {
   try {
     await runCli(["--proof", "verify with tests"]);
   } finally {
-    process.env.TMUX = originalTmux;
+    if (originalTmux === undefined) {
+      Reflect.deleteProperty(process.env, "TMUX");
+    } else {
+      process.env.TMUX = originalTmux;
+    }
     console.log = originalLog;
   }
 
@@ -353,7 +357,11 @@ test("runCli does not print tmux detach hint outside tmux", async () => {
   try {
     await runCli(["--proof", "verify with tests"]);
   } finally {
-    process.env.TMUX = originalTmux;
+    if (originalTmux === undefined) {
+      Reflect.deleteProperty(process.env, "TMUX");
+    } else {
+      process.env.TMUX = originalTmux;
+    }
     console.log = originalLog;
   }
 
@@ -576,7 +584,11 @@ test("runCli keeps promptless paired tmux inside tmux on fire-and-forget auto-up
       "[loop] interactive paired tmux mode must be started outside tmux."
     );
   } finally {
-    process.env.TMUX = originalTmux;
+    if (originalTmux === undefined) {
+      Reflect.deleteProperty(process.env, "TMUX");
+    } else {
+      process.env.TMUX = originalTmux;
+    }
   }
 
   expect(awaitAutoUpdateCheckMock).not.toHaveBeenCalled();

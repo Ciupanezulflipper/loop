@@ -470,6 +470,7 @@ test("codex tmux proxy reconnects to a live upstream without dropping the tui so
 
     upstreamSockets[0]?.close();
     await waitFor(() => upstreamConnections >= 2, 5000);
+    await waitFor(() => upstreamInitializeCount >= 2, 5000);
     expect(tuiClosed).toBe(false);
     expect(upstreamInitializeCount).toBe(2);
 
