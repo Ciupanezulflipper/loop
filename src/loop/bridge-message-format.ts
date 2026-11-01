@@ -11,7 +11,10 @@ export const formatCodexBridgeMessage = (
   if (!trimmed) {
     return "";
   }
-  return source === "claude" ? `Claude: ${trimmed}` : trimmed;
+  if (source !== "claude" || trimmed.startsWith("Claude:")) {
+    return trimmed;
+  }
+  return `Claude: ${trimmed}`;
 };
 
 export const normalizeBridgeMessage = (message: string): string =>
