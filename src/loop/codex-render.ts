@@ -8,6 +8,7 @@ interface AppServerEvent {
 interface CodexRenderState {
   activeItemHasDelta: boolean;
   activeItemId: string;
+  completedIds: Set<string>;
   lastCompleted: string;
   parsed: string;
   pendingMessageBreak: boolean;
@@ -173,18 +174,23 @@ const handleCompletedLine = (
     Boolean(state.activeItemId) &&
     completedId === state.activeItemId;
   const candidate = parseCompletedMessage(item).trim();
-  if (
-    candidate &&
-    candidate !== state.lastCompleted &&
-    !(sameActive && state.activeItemHasDelta)
-  ) {
+  // Items with an ID dedupe by ID (distinct IDs may share identical text);
+  // items without an ID fall back to comparing against the last text.
+  const duplicate = completedId
+    ? state.completedIds.has(completedId)
+    : candidate === state.lastCompleted;
+  const streamed = sameActive && state.activeItemHasDelta;
+  if (candidate && !duplicate && !streamed) {
     state.lastCompleted = candidate;
     appendChunk(state, format, write, candidate);
+  }
+  if (completedId) {
+    state.completedIds.add(completedId);
   }
   // Skip boundary when this completed event matches the item already streamed
   // via deltas. The delta handler detects item changes and sets boundaries when
   // a genuinely new item arrives, preventing spurious line breaks mid-stream.
-  if (!(sameActive && state.activeItemHasDelta)) {
+  if (!streamed) {
     markMessageBoundary(state);
   }
 };
@@ -195,6 +201,7 @@ export const createCodexRenderer = (
   const state: CodexRenderState = {
     activeItemHasDelta: false,
     activeItemId: "",
+    completedIds: new Set<string>(),
     lastCompleted: "",
     parsed: "",
     pendingMessageBreak: false,
