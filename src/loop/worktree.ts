@@ -384,7 +384,13 @@ export const maybeEnterWorktree = (
   );
   const sourcePlanPath = join(currentCwd, PLAN_FILE);
   if (deps.pathExists(sourcePlanPath)) {
-    deps.moveFile(sourcePlanPath, join(worktreeCwd, PLAN_FILE));
+    const targetPlanPath = join(worktreeCwd, PLAN_FILE);
+    if (deps.pathExists(targetPlanPath)) {
+      throw new Error(
+        `[loop] ${PLAN_FILE} already exists in worktree "${worktreeCwd}"; refusing to overwrite it`
+      );
+    }
+    deps.moveFile(sourcePlanPath, targetPlanPath);
   }
   deps.chdir(worktreeCwd);
   deps.log(
