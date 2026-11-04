@@ -5,13 +5,14 @@ import type { Agent, Options, ReviewResult, RunResult } from "./types";
 
 const DEFAULT_ITERATION_COOLDOWN_MS = 30_000;
 const MAX_ITERATION_COOLDOWN_MS = 2_147_483_647;
+const DECIMAL_COOLDOWN_MS_RE = /^[0-9]+$/;
 const parseIterationCooldownMs = (): number => {
   const raw = process.env.LOOP_COOLDOWN_MS;
   if (raw === undefined) {
     return DEFAULT_ITERATION_COOLDOWN_MS;
   }
   const text = raw.trim();
-  if (!/^[0-9]+$/.test(text)) {
+  if (!DECIMAL_COOLDOWN_MS_RE.test(text)) {
     return DEFAULT_ITERATION_COOLDOWN_MS;
   }
   const parsed = Number(text);
