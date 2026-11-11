@@ -8,9 +8,15 @@ const PLAN_FILE = "PLAN.md";
 const MISSING_PROMPT_ERROR =
   "Missing prompt. Use --prompt, pass positional text, or create PLAN.md.";
 const MARKDOWN_PATH_RE = /^[^\s]+\.md$/i;
+const MARKDOWN_EXT_RE = /\.md$/i;
 
 const isMarkdownInput = (input: string): boolean =>
   MARKDOWN_PATH_RE.test(input.trim());
+
+const isExistingMarkdownFile = (input: string): boolean => {
+  const path = input.trim();
+  return MARKDOWN_EXT_RE.test(path) && isFile(path);
+};
 
 const resolvePlanReviewer = (
   reviewPlan: PlanReviewMode | undefined,
@@ -90,7 +96,15 @@ export const resolveTask = async (opts: Options): Promise<string> => {
     throw new Error(MISSING_PROMPT_ERROR);
   }
 
-  if (!opts.promptInput || isMarkdownInput(opts.promptInput)) {
+  if (!opts.promptInput) {
+    return await readPrompt(source);
+  }
+
+  if (isExistingMarkdownFile(opts.promptInput)) {
+    return await readPrompt(opts.promptInput.trim());
+  }
+
+  if (isMarkdownInput(opts.promptInput)) {
     return await readPrompt(source);
   }
 
